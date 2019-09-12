@@ -1,13 +1,21 @@
-const express = require('express');
-const React = require('react');
-const ReactDOMServer = require('react-dom/server');
+import 'babel-polyfill';
+import express from 'express';
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
 
-const Home = require('./client/components/Home').default;
+import Home from './client/components/Home';
+import renderer from './helpers/renderer';
+import createStore  from './helpers/createStore';
+
 const app = express();
 
-app.get('/' , (req,res) => {
-    const content = ReactDOMServer.renderToString(<Home />);
-    res.send(content);
+app.use(express.static("public"));
+
+app.get('*' , (req,res) => {
+
+    const store = createStore();
+
+    res.send(renderer(req,store));
 });
 
 app.listen(3000 , () => {
