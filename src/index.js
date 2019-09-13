@@ -2,8 +2,9 @@ import 'babel-polyfill';
 import express from 'express';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
+import { matchRoutes } from 'react-router-config';
 
-import Home from './client/components/Home';
+import Routes from './client/Routes';
 import renderer from './helpers/renderer';
 import createStore  from './helpers/createStore';
 
@@ -15,7 +16,14 @@ app.get('*' , (req,res) => {
 
     const store = createStore();
 
-    res.send(renderer(req,store));
+    Promise.all(matchRoutes(Routes , req.path).map(( { route : { loadData } }  ) => {
+        return loadData ? loadData(store) : null;
+    })).then(() => {
+        res.send(renderer(req,store));
+    }).catch(err => {
+        console.log(err);
+    });
+
 });
 
 app.listen(3000 , () => {
